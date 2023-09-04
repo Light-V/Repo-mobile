@@ -7,6 +7,10 @@ import 'nprogress/nprogress.css'
 import mian from '@/views/index.vue'
 import mock from '@/views/mock/index.vue'
 import charts from '@/views/charts/index.vue'
+import inbound from '@/views/inbound/index.vue'
+import login from '@/views/login/index.vue'
+import inbound_detail from '@/views/inbound_detail/index.vue'
+
 NProgress.configure({ showSpinner: true, parent: '#app' })
 
 // 定义路由，每个路由都需要映射到一个组件
@@ -25,6 +29,21 @@ const routes = [
     path: '/charts',
     name: 'charts',
     component: charts,
+  },
+  {
+    path: '/inbound',
+    name: 'inbound',
+    component: inbound,
+  },
+  {
+    path: '/login',
+    name: 'login',
+    component: login,
+  },
+  {
+    path: '/inbound_detail/:id',
+    name: 'inbound_detail',
+    component: inbound_detail,
   },
 ]
 

@@ -21,25 +21,18 @@ watch(checked, (val) => {
 <template>
   <div class="container">
     <div class="logo" />
-    <van-cell-group title="一个集成最新技术栈、完整干净的移动端模板" inset>
+    <van-cell-group title="" inset>
       <van-cell center title="🌗 暗黑模式">
         <template #right-icon>
           <van-switch v-model="checked" size="18px" />
         </template>
       </van-cell>
 
-      <van-cell title="💿 mock 指南" to="mock" is-link />
+      <van-cell title="📷 扫码入库" to="inbound" is-link />
 
-      <van-cell title="📊 charts 演示" to="charts" is-link />
+      <van-cell title="🏪 库存盘点" to="mock" is-link />
 
-      <van-cell center>
-        <template #title>
-          <span class="custom-title">🎨 欢迎补充</span>
-          <van-tag type="primary">
-            PR
-          </van-tag>
-        </template>
-      </van-cell>
+      <van-cell title="🚚 扫码出库" to="charts" is-link />
     </van-cell-group>
   </div>
 </template>

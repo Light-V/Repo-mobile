@@ -8,12 +8,12 @@ import { STORAGE_TOKEN_KEY } from '@/stores/mutation-type'
 // 可以根据自己的需要修改，常见的如 Access-Token，Authorization
 // 需要注意的是，请尽量保证使用中横线`-` 来作为分隔符，
 // 避免被 nginx 等负载均衡器丢弃了自定义的请求头
-export const REQUEST_TOKEN_KEY = 'Access-Token'
+export const REQUEST_TOKEN_KEY = 'Authorization'
 
 // 创建 axios 实例
 const request = axios.create({
   // API 请求的默认前缀
-  baseURL: process.env.VUE_APP_API_BASE_URL,
+  baseURL: 'http://localhost:8080/api/v1',
   timeout: 6000, // 请求超时时间
 })
 
@@ -35,13 +35,13 @@ const errorHandler = (error: RequestError): Promise<any> => {
       })
     }
     // 401 未登录/未授权
-    if (status === 401 && data.result && data.result.isLogin) {
+    if (status === 401) {
       showNotify({
         type: 'danger',
         message: 'Authorization verification failed',
       })
       // 如果你需要直接跳转登录页面
-      // location.replace(loginRoutePath)
+      location.replace('/login')
     }
   }
   return Promise.reject(error)
