@@ -32,7 +32,7 @@ watch(checked, (val) => {
 
       <van-cell title="🏪 库存盘点" to="mock" is-link />
 
-      <van-cell title="🚚 扫码出库" to="charts" is-link />
+      <van-cell title="🚚 扫码出库" to="outbound" is-link />
     </van-cell-group>
   </div>
 </template>

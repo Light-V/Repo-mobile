@@ -3,9 +3,9 @@ import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { Notify, Form, Field, RadioGroup, Cell, Uploader, Button, Radio } from 'vant';
 import { showNotify } from 'vant' // 导入 Vant 的 Notify 组件
-import { queryInboundDetail, uploadPhoto, inboundScan, inboundCommit } from '@/api'
+import { queryOutboundDetail, outboundScan, outboundCommit, outboundAdd, outboundRemove } from '@/api'
 
-const title = '入库通知单详情'
+const title = '出库通知单详情'
 const router = useRouter()
 const notificationId = router.currentRoute.value.params.id
 const notification = ref({}) // 存储通知单的详细信息
@@ -23,7 +23,7 @@ const onClickLeft = () => {
 const fetchNotificationDetail = async () => {
   try {
     // 调用后台 API 获取通知单信息，假设后台 API 返回一个数组
-    queryInboundDetail({ notification_id: Number(notificationId) }).then((res) => {
+    queryOutboundDetail({ notification_id: Number(notificationId) }).then((res) => {
       notification.value = res
     })
   } catch (error) {
@@ -38,9 +38,9 @@ onMounted(() => {
 
 // 根据状态值返回对应的状态文本
 const materialStatusText = (status) => {
-  if (status === 1)
+  if (status === 5)
     return '未扫码'
-  else if (status === 2)
+  else if (status === 6)
     return '已扫码'
   else
     return '未知'
@@ -55,9 +55,9 @@ const sortedMaterials = computed(() => {
 
 // 根据状态值返回对应的 CSS 类名
 const materialStatusClass = (status) => {
-  if (status === 1)
+  if (status === 5)
     return 'status-red' // 未扫码，红色
-  else if (status === 2)
+  else if (status === 6)
     return 'status-green' // 已扫码，绿色
   else
     return 'status-yellow' // 其他状态，黄色
@@ -82,31 +82,6 @@ const rules = {
   damageResponsibility: [{ required: true, message: '请选择破损责任方' }],
 }
 
-// 处理文件上传
-const handleFileUpload = (file) => {
-  const data = new FormData();
-  console.log(file)
-  data.append('photos', file.file); // 上传的文件字段名为 'photos'，可根据后端要求修改
-
-  // 发送文件上传请求
-  uploadPhoto(data).then((res) => {
-      // 处理上传成功后的响应
-      // 将上传成功的文件链接保存在 form.damagePhotos 中
-      if (res.success) {
-        formData.value.damagePhotos = [...formData.value.damagePhotos,...res.photoUrls];
-        showNotify({type: 'success', message: '上传破损照片成功'})
-        console.log(formData.value)
-      }
-      else
-      {
-        showNotify('上传破损照片失败，请重试')
-      }
-    })
-    .catch((error) => {
-      showNotify('上传破损照片失败，请重试')
-      console.error(error);
-    });
-};
 
 // 提交整张通知单
 const submitNotification = () => {
@@ -114,7 +89,7 @@ const submitNotification = () => {
   const data = {
     notificationId: Number(notificationId)
   }
-  inboundCommit(data).then((res) => {
+  outboundCommit(data).then((res) => {
     if (res.success)
     {
       showNotify({type: 'success', message: '通知单提交成功'});
@@ -135,14 +110,9 @@ const submitForm = () => {
   const data = {
     notificationId: Number(notificationId),
     barcode: formData.value.barcode,
-    customerBarcode: formData.value.customerBarcode,
     remark: formData.value.remark,
-    damageLayers: Number(formData.value.damageLayers),
-    damageWeight: Number(formData.value.damageWeight),
-    damageResponsibility: formData.value.damageResponsibility,
-    damagePhotos: formData.value.damagePhotos,
   }
-  inboundScan(data).then((res) => {
+  outboundScan(data).then((res) => {
     // 发送表单数据到后端的 API
     showNotify({type: 'success', message: '提交成功'})
     // 刷新数据
@@ -153,6 +123,44 @@ const submitForm = () => {
   })
 }
 
+const addForm = () => {
+  // 构建要发送给后端的数据对象
+  const data = {
+    outbound_notification_id: Number(notificationId),
+    barcodes: [formData.value.barcode],
+    remark: formData.value.remark,
+  }
+  outboundAdd(data).then((res) => {
+    // 发送表单数据到后端的 API
+    showNotify({type: 'success', message: '添加成功'})
+    // 刷新数据
+    fetchNotificationDetail()
+  }).catch((error) => {
+    showNotify('添加失败，请重试')
+    console.error(error);
+  })
+}
+
+const removeForm = () => {
+  // 构建要发送给后端的数据对象
+  const data = {
+    notificationId: Number(notificationId),
+    barcodes: [formData.value.barcode],
+    remark: formData.value.remark,
+  }
+  outboundRemove(data).then((res) => {
+    // 发送表单数据到后端的 API
+    showNotify({type: 'success', message: '移除成功'})
+    // 刷新数据
+    fetchNotificationDetail()
+  }).catch((error) => {
+    showNotify('移除失败，请重试')
+    console.error(error);
+  })
+}
+
+const showButtons = ref<bool>(false)
+
 </script>
 
 <template>
@@ -162,7 +170,7 @@ const submitForm = () => {
       <div><strong>订单号：</strong>{{ notification.order_id }}</div>
       <div><strong>客户名：</strong>{{ notification.customer_name }}</div>
       <div><strong>车牌号：</strong>{{ notification.license_plate_number }}</div>
-      <div><strong>入库日期：</strong>{{ formatInStockDate(notification.inbound_date) }}</div>
+      <div><strong>出库日期：</strong>{{ formatInStockDate(notification.out_stock_date) }}</div>
       <div><strong>备注：</strong>{{ notification.remark }}</div>
       <div><strong>总重量：</strong>{{ notification.total_weight }}Kg</div>
       <!-- 添加提交按钮 -->
@@ -172,45 +180,31 @@ const submitForm = () => {
     <!-- 添加表单 -->
     <van-form ref="form" :model="formData" :rules="rules">
       <van-field v-model="formData.barcode" label="条形码" required clearable />
-      <van-field v-model="formData.customerBarcode" label="客户条码" clearable />
       <van-field v-model="formData.remark" label="备注" clearable />
-      <van-field v-model="formData.damageLayers" label="破损层数" type="number" required clearable />
-      <van-field v-model="formData.damageWeight" label="破损重量" type="number" required clearable />
-      破损原因
-      <van-radio-group v-model="formData.damageResponsibility">
-        <van-radio name="无">
-          无
-        </van-radio>
-        <van-radio name="来料">
-          来料破损
-        </van-radio>
-        <van-radio name="仓库">
-          仓库破损
-        </van-radio>
-        <van-radio name="其他">
-          其他破损
-        </van-radio>
-      </van-radio-group>
-      
-      <van-uploader
-        label="上传破损照片"
-        accept="image/*"
-        multiple
-        max-count="3"
-        :after-read="handleFileUpload"
-      />
-      <van-button type="primary" block @click="submitForm">提交扫码</van-button>
+      <van-space>
+        <van-button type="primary" block @click="submitForm">提交扫码</van-button>
+        <van-button
+          icon="plus" type="danger"
+          block
+          @click="showButtons=!showButtons"
+          v-show="!showButtons" 
+        >
+          点击显示按钮
+        </van-button>
+        <van-button type="danger" block @click="addForm" v-show="showButtons">扫码加货</van-button>
+        <van-button type="danger" block @click="removeForm" v-show="showButtons">扫码退货</van-button>
+      </van-space>
     </van-form>
 
     <!-- 展示物料列表 -->
     <div class="material-list">
-      <div v-for="(material, index) in notification.materials" :key="index" class="material">
-        <div><strong>物料名称：</strong>{{ material.material_info.name }}</div>
+      <div v-for="(material, index) in notification.stocks" :key="index" class="material">
+        <div><strong>物料名称：</strong>{{ material.material_name }}</div>
         <div><strong>条形码：</strong>{{ material.barcode }}</div>
-        <div><strong>规格宽：</strong>{{ material.material_info.spec }} mm</div>
-        <div><strong>规格长：</strong>{{ material.material_info.spec_length }} mm</div>
-        <div><strong>克重：</strong>{{ material.material_info.weight }}</div>
-        <div><strong>重量：</strong>{{ material.weight }} kg</div>
+        <div><strong>规格宽：</strong>{{ material.spec }} mm</div>
+        <div><strong>规格长：</strong>{{ material.spec_length }} mm</div>
+        <div><strong>克重：</strong>{{ material.material_weight }}</div>
+        <div><strong>重量：</strong>{{ material.stock_weight }} kg</div>
         <div :class="materialStatusClass(material.status)">
           <strong>状态：</strong>{{ materialStatusText(material.status) }}
         </div>

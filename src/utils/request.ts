@@ -13,7 +13,7 @@ export const REQUEST_TOKEN_KEY = 'Authorization'
 // 创建 axios 实例
 const request = axios.create({
   // API 请求的默认前缀
-  baseURL: 'http://localhost:8080/api/v1',
+  baseURL: 'http://192.168.1.6:8080/api/v1',
   timeout: 6000, // 请求超时时间
 })
 

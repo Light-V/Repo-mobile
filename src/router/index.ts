@@ -8,8 +8,10 @@ import mian from '@/views/index.vue'
 import mock from '@/views/mock/index.vue'
 import charts from '@/views/charts/index.vue'
 import inbound from '@/views/inbound/index.vue'
+import outbound from '@/views/outbound/index.vue'
 import login from '@/views/login/index.vue'
 import inbound_detail from '@/views/inbound_detail/index.vue'
+import outbound_detail from '@/views/outbound_detail/index.vue'
 
 NProgress.configure({ showSpinner: true, parent: '#app' })
 
@@ -44,6 +46,16 @@ const routes = [
     path: '/inbound_detail/:id',
     name: 'inbound_detail',
     component: inbound_detail,
+  },
+  {
+    path: '/outbound',
+    name: 'outbound',
+    component: outbound,
+  },
+  {
+    path: '/outbound_detail/:id',
+    name: 'outbound_detail',
+    component: outbound_detail,
   },
 ]
 
